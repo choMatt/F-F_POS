@@ -1,7 +1,16 @@
 import { useState } from 'react'
 import Checkout from './components/Checkout'
 import ProductManager from './components/ProductManager'
+import Orders from './components/Orders'
+import Settings from './components/Settings'
 import './App.css'
+
+const TABS = [
+  { id: 'pos', label: 'POS' },
+  { id: 'orders', label: 'Orders' },
+  { id: 'products', label: 'Products' },
+  { id: 'settings', label: 'Settings' },
+]
 
 export default function App() {
   const [tab, setTab] = useState('pos')
@@ -9,14 +18,20 @@ export default function App() {
   return (
     <>
       <nav className="app-nav">
-        <button className={tab === 'pos' ? 'active' : ''} onClick={() => setTab('pos')}>
-          POS
-        </button>
-        <button className={tab === 'products' ? 'active' : ''} onClick={() => setTab('products')}>
-          Products
-        </button>
+        {TABS.map((t) => (
+          <button
+            key={t.id}
+            className={tab === t.id ? 'active' : ''}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
       </nav>
-      {tab === 'pos' ? <Checkout /> : <ProductManager />}
+      {tab === 'pos' && <Checkout />}
+      {tab === 'orders' && <Orders />}
+      {tab === 'products' && <ProductManager />}
+      {tab === 'settings' && <Settings />}
     </>
   )
 }

@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { createOrder } from '../db/orders'
 import { formatPrice, toCentavos } from '../utils/money'
+import ReceiptDialog from './ReceiptDialog'
 import './Checkout.css'
 
 export default function Checkout() {
@@ -16,7 +17,8 @@ export default function Checkout() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [lastSale, setLastSale] = useState(null)
-
+  const [showReceipt, setShowReceipt] = useState(false)
+  
   if (!categories || !products) return <p>Loading…</p>
 
   const visibleProducts = products.filter(
@@ -131,9 +133,10 @@ export default function Checkout() {
             {lastSale.paymentMethod === 'cash' && (
               <span>Change {formatPrice(lastSale.change)}</span>
             )}
+            <button onClick={() => setShowReceipt(true)}>Print receipt</button>
           </div>
         )}
-
+        
         {cart.length === 0 ? (
           <p className="empty">Tap a product to add it.</p>
         ) : (
@@ -219,6 +222,9 @@ export default function Checkout() {
             {saving ? 'Saving…' : `Complete sale ${total > 0 ? formatPrice(total) : ''}`}
           </button>
         </div>
+        {showReceipt && lastSale && (
+          <ReceiptDialog order={lastSale} onClose={() => setShowReceipt(false)} />
+        )}
       </aside>
     </div>
   )

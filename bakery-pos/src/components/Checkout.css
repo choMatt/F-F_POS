@@ -118,3 +118,5 @@
   .checkout { grid-template-columns: 1fr; }
   .cart { position: static; }
 }
+
+.sale-done button { margin-top: 8px; }
