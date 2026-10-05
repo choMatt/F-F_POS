@@ -22,6 +22,20 @@ export async function createOrder({ items, paymentMethod, amountPaid }) {
     change: amountPaid - total,
   }
 
-  const id = await db.orders.add(order)
-  return { id, ...order }
+  return db.transaction('rw', db.orders, db.products, async () => {
+    for (const item of items) {
+      const product = await db.products.get(item.productId)
+      if (!product || product.trackStock !== true) continue // untracked or deleted
+
+      const available = product.stock ?? 0
+      if (item.qty > available) {
+        // Throwing inside the transaction rolls everything back
+        throw new Error(`Not enough stock for ${product.name}: ${available} left.`)
+      }
+      await db.products.update(product.id, { stock: available - item.qty })
+    }
+
+    const id = await db.orders.add(order)
+    return { id, ...order }
+  })
 }

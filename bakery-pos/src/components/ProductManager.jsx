@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '../db/db'
 import { addProduct, updateProduct, deleteProduct } from '../db/products'
+import { isTracked } from '../db/inventory'
 import ProductForm from './ProductForm'
 import './ProductManager.css'
+
 
 const formatPrice = (centavos) =>
   `₱${(centavos / 100).toLocaleString('en-PH', {
@@ -62,6 +64,7 @@ export default function ProductManager() {
                 <span>
                   {categoryName(p.categoryId)} ·{' '}
                   {p.saleType === 'box' ? `Box of ${p.boxSize}` : 'Individual'}
+                  {isTracked(p) && ` · ${p.stock ?? 0} in stock`}
                   {!p.isActive && ' · Unavailable'}
                 </span>
               </div>

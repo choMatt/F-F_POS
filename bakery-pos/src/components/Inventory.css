@@ -1,0 +1,77 @@
+.inventory {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+  text-align: left;
+}
+.inventory h1 { margin: 0 0 16px; }
+
+.inventory button {
+  padding: 8px 14px;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+.inventory button.secondary,
+.inventory-filters button {
+  background: transparent;
+  color: var(--text-h);
+  border-color: var(--border);
+}
+.inventory-filters button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.inventory-summary { display: flex; gap: 12px; margin-bottom: 16px; }
+.inventory-summary div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.inventory-summary strong { font-size: 22px; color: var(--text-h); }
+.inventory-summary .out { border-color: #c62828; }
+.inventory-summary .out strong { color: #c62828; }
+.inventory-summary .low { border-color: #e65100; }
+.inventory-summary .low strong { color: #e65100; }
+
+.inventory-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+
+.stock-list { list-style: none; padding: 0; margin: 0; }
+.stock-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stock-row.inactive { opacity: 0.55; }
+.stock-row .info { flex: 1 1 180px; display: flex; flex-direction: column; }
+.stock-row .info span { font-size: 14px; }
+
+.level { display: flex; flex-direction: column; align-items: center; min-width: 90px; }
+.level strong { font-size: 22px; color: var(--text-h); }
+.level span { font-size: 12px; }
+.level.low strong, .level.low span { color: #e65100; }
+.level.out strong, .level.out span { color: #c62828; }
+
+.adjust { display: flex; gap: 6px; }
+.adjust input {
+  width: 72px;
+  padding: 8px;
+  font: inherit;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.stock-row .error { flex-basis: 100%; margin: 0; color: #c62828; font-size: 14px; }
+
+.inventory .empty { opacity: 0.7; }
+.inventory .footnote { margin-top: 16px; font-size: 14px; opacity: 0.7; }

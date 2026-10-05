@@ -18,3 +18,17 @@
   border-color: var(--accent);
   color: #fff;
 }
+
+.app-nav button { display: inline-flex; align-items: center; gap: 6px; }
+.nav-badge {
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  text-align: center;
+  border-radius: 10px;
+  background: #c62828;
+  color: #fff;
+  font-size: 12px;
+}

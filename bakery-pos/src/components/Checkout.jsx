@@ -5,6 +5,7 @@ import { createOrder } from '../db/orders'
 import { formatPrice, toCentavos } from '../utils/money'
 import ReceiptDialog from './ReceiptDialog'
 import './Checkout.css'
+import { isTracked, stockStatus } from '../db/inventory'
 
 export default function Checkout() {
   const categories = useLiveQuery(() => db.categories.orderBy('sortOrder').toArray(), [])
@@ -29,7 +30,16 @@ export default function Checkout() {
 
   const qtyInCart = (id) => cart.find((i) => i.productId === id)?.qty ?? 0
 
+  const productById = (id) => products.find((p) => p.id === id)
+  
+  // Untracked products are unlimited; tracked ones stop at the stock count
+  const canAddMore = (id) => {
+    const p = productById(id)
+    return !p || !isTracked(p) || qtyInCart(id) < (p.stock ?? 0)
+  }
+  
   const addToCart = (product) => {
+    if (!canAddMore(product.id)) return
     setLastSale(null)
     setCart((prev) => {
       const existing = prev.find((i) => i.productId === product.id)
@@ -45,13 +55,15 @@ export default function Checkout() {
   }
 
   // delta of -1 on qty 1 removes the line
-  const changeQty = (productId, delta) =>
+  const changeQty = (productId, delta) => {
+    if (delta > 0 && !canAddMore(productId)) return
     setCart((prev) =>
       prev
         .map((i) => (i.productId === productId ? { ...i, qty: i.qty + delta } : i))
         .filter((i) => i.qty > 0),
     )
-
+  }
+  
   const removeItem = (productId) =>
     setCart((prev) => prev.filter((i) => i.productId !== productId))
 
@@ -109,18 +121,32 @@ export default function Checkout() {
           <p className="empty">No products to show. Add some in the Products tab.</p>
         ) : (
           <div className="product-grid">
-            {visibleProducts.map((p) => (
-              <button key={p.id} className="product-tile" onClick={() => addToCart(p)}>
-                {qtyInCart(p.id) > 0 && <span className="badge">{qtyInCart(p.id)}</span>}
-                <span className="name">{p.name}</span>
-                <span className="meta">
-                  {p.saleType === 'box' ? `Box of ${p.boxSize}` : 'Individual'}
-                </span>
-                <span className="price">{formatPrice(p.price)}</span>
-              </button>
-            ))}
-          </div>
+            {visibleProducts.map((p) => {
+              const status = stockStatus(p)
+              return (
+                <button
+                  key={p.id}
+                  className="product-tile"
+                  onClick={() => addToCart(p)}
+                  disabled={!canAddMore(p.id)}
+                >
+                  {qtyInCart(p.id) > 0 && <span className="badge">{qtyInCart(p.id)}</span>}
+                  <span className="name">{p.name}</span>
+                  <span className="meta">
+                    {p.saleType === 'box' ? `Box of ${p.boxSize}` : 'Individual'}
+                  </span>
+                  {status !== 'untracked' && (
+                    <span className={`stock ${status}`}>
+                      {status === 'out' ? 'Sold out' : `${p.stock} left`}
+                    </span>
+                  )}
+                  <span className="price">{formatPrice(p.price)}</span>
+                </button>
+              )
+            })}
+            </div>
         )}
+
       </section>
 
       <aside className="cart">
@@ -152,11 +178,16 @@ export default function Checkout() {
                 <div className="qty">
                   <button onClick={() => changeQty(i.productId, -1)} aria-label="Decrease">−</button>
                   <span>{i.qty}</span>
-                  <button onClick={() => changeQty(i.productId, 1)} aria-label="Increase">+</button>
+                  <button
+                    onClick={() => changeQty(i.productId, 1)}
+                    disabled={!canAddMore(i.productId)}
+                    aria-label="Increase"
+                  >+</button>
                 </div>
                 <button className="remove" onClick={() => removeItem(i.productId)} aria-label="Remove">
                   ✕
                 </button>
+                
               </li>
             ))}
           </ul>

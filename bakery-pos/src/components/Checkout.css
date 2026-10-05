@@ -120,3 +120,7 @@
 }
 
 .sale-done button { margin-top: 8px; }
+
+.product-tile .stock { font-size: 12px; opacity: 0.75; }
+.product-tile .stock.low { color: #e65100; opacity: 1; font-weight: 600; }
+.product-tile .stock.out { color: #c62828; opacity: 1; font-weight: 600; }

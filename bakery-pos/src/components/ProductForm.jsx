@@ -1,6 +1,7 @@
 import { useState } from 'react'
-
+import { DEFAULT_LOW_STOCK } from '../db/inventory'
 const toPesos = (centavos) => (centavos / 100).toFixed(2)
+const isWholeNumber = (v) => v !== '' && Number.isInteger(Number(v)) && Number(v) >= 0
 
 export default function ProductForm({ product, categories, onSave, onCancel }) {
   const [name, setName] = useState(product?.name ?? '')
@@ -9,6 +10,9 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
   const [saleType, setSaleType] = useState(product?.saleType ?? 'single')
   const [boxSize, setBoxSize] = useState(product?.boxSize ?? 6)
   const [isActive, setIsActive] = useState(product?.isActive ?? true)
+  const [trackStock, setTrackStock] = useState(product?.trackStock ?? false)
+  const [stock, setStock] = useState(product?.stock ?? 0)
+  const [lowStockAt, setLowStockAt] = useState(product?.lowStockAt ?? DEFAULT_LOW_STOCK)
   const [error, setError] = useState('')
 
   const handleSubmit = (e) => {
@@ -23,6 +27,12 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
     if (saleType === 'box' && (!Number.isInteger(+boxSize) || +boxSize < 2)) {
       return setError('Box size must be a whole number of 2 or more.')
     }
+    if (trackStock && !isWholeNumber(stock)) {
+      return setError('Stock must be a whole number, 0 or more.')
+    }
+    if (trackStock && !isWholeNumber(lowStockAt)) {
+      return setError('Low-stock alert must be a whole number, 0 or more.')
+    }
 
     onSave({
       name: trimmed,
@@ -31,6 +41,9 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
       saleType,
       boxSize: saleType === 'box' ? Number(boxSize) : null,
       isActive,
+      trackStock,
+      // Only written when tracking, so turning tracking off keeps the old count
+      ...(trackStock && { stock: Number(stock), lowStockAt: Number(lowStockAt) }),
     })
   }
 
@@ -96,6 +109,46 @@ export default function ProductForm({ product, categories, onSave, onCancel }) {
             onChange={(e) => setBoxSize(e.target.value)}
           />
         </label>
+      )}
+
+      <label className="inline">
+        <input
+          type="checkbox"
+          checked={trackStock}
+          onChange={(e) => setTrackStock(e.target.checked)}
+        />
+        Track stock
+      </label>
+
+      {trackStock && (
+        <>
+          <label>
+            Stock on hand {saleType === 'box' ? '(boxes)' : '(pieces)'}
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              value={stock}
+              onChange={(e) => setStock(e.target.value)}
+            />
+          </label>
+          <label>
+            Low-stock alert at
+            <input
+              type="number"
+              inputMode="numeric"
+              min="0"
+              step="1"
+              value={lowStockAt}
+              onChange={(e) => setLowStockAt(e.target.value)}
+            />
+          </label>
+          <p className="hint">
+            Shows as low when stock is at or below this number. Each product keeps
+            its own count, so a single cookie and a box of cookies are tracked separately.
+          </p>
+        </>
       )}
 
       <label className="inline">
